@@ -7,7 +7,7 @@ fps = 30
 
 dt = 0.01
 
-screen_width, screen_height = 1200, 1000
+screen_width, screen_height = 1800, 1000
 
 center_x = screen_width // 2
 center_y = screen_height // 2
@@ -54,12 +54,23 @@ class Planet:
             pygame.draw.lines(screen, self.color, False, updated_points, 2)
 
         pygame.draw.circle(screen, self.color, (x, y), self.radius)
+
+        if not self.sun:
+            FONT = pygame.font.SysFont("comicsans", 16)
+            distance_text = FONT.render(f"{round(self.distance_from_sun / 149597870700, 5)}au", 1, (255, 255, 255))
+            screen.blit(distance_text, (x - distance_text.get_width()/2, y - distance_text.get_height()/2))
+
+            speed_text = FONT.render(f"{round(math.sqrt(self.x_vel**2 + self.y_vel**2), 2)}km/s", 1, (255, 255, 255))
+            screen.blit(speed_text, (x - speed_text.get_width()/2, y + speed_text.get_height()/2))
         
     def attraction(self, other):
         other_x, other_y = other.x, other.y
         distance_x = other_x - self.x
         distance_y = other_y - self.y
         distance = math.sqrt(distance_x**2 + distance_y**2)
+
+        if other.sun:
+            self.distance_from_sun = distance  # in km
 
         force = self.G * self.mass * other.mass / distance**2
         theta = math.atan2(distance_y, distance_x)
@@ -91,7 +102,13 @@ def main():
     sun = Planet(0, 0, 30, (255, 255, 0), 1.98892 * 10**30)
     sun.sun = True
 
-    planets = [sun]
+    earth = Planet(-1 * Planet.AU, 0, 16, (100, 149, 237), 5.9742 * 10**24)
+    earth.y_vel = 29.783 * 1000  # 29.783 km/s
+
+    mars = Planet(-1.52 * Planet.AU, 0, 12, (188, 39, 50), 6.39 * 10**24)
+    mars.y_vel = 24.077 * 1000
+
+    planets = [sun, earth, mars]
 
     while running:
         clock.tick(60)
@@ -101,7 +118,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 
                 mouse_x, mouse_y = event.pos
                 # Convert screen coordinates to simulation coordinates
@@ -112,7 +129,7 @@ def main():
                     sim_x, sim_y,
                     random.randint(5, 15),
                     (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)),
-                    random.uniform(1e17, 1e20)
+                    random.uniform(1e23, 1e25)  # Mass between 10^23 and 10^25 kg
                 )
                 # Optionally, set an initial velocity
                 new_planet.y_vel = random.uniform(-30000, 30000)
@@ -126,6 +143,13 @@ def main():
         periapsis = 0
         apoapsis = 0
 
+        pygame.display.update()
+
+    pygame.quit()
+
+main()
+
+'''
         for planet in planets:
             if planet.sun and len(planet) > 0:
                 continue
@@ -144,10 +168,5 @@ def main():
                     continue
                 periapsis = min(planet.distances)
                 apoapsis = max(planet.distances)
-                print(f"{planet} periapsis: {periapsis}, apoapsis: {apoapsis}")
-
-        pygame.display.update()
-
-    pygame.quit()
-
-main()
+             print(f"{planet} periapsis: {periapsis}, apoapsis: {apoapsis}")
+'''
