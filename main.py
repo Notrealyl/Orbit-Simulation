@@ -11,6 +11,9 @@ screen_width, screen_height = 1800, 1000
 
 center_x = screen_width // 2
 center_y = screen_height // 2
+
+scale_radius = 0.5
+
 #------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -22,7 +25,7 @@ clock = pygame.time.Clock()
 class Planet:
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
-    SCALE = 250 / AU  # 1 AU = 100 pixels
+    SCALE = 50 / AU  # 1 AU = 100 pixels
     TIMESTEP = 3600 * 24  # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass):
@@ -53,7 +56,7 @@ class Planet:
 
             pygame.draw.lines(screen, self.color, False, updated_points, 2)
 
-        pygame.draw.circle(screen, self.color, (x, y), self.radius)
+        pygame.draw.circle(screen, self.color, (x, y), self.radius * scale_radius)
 
         if not self.sun:
             FONT = pygame.font.SysFont("comicsans", 16)
@@ -102,13 +105,37 @@ def main():
     sun = Planet(0, 0, 30, (255, 255, 0), 1.98892 * 10**30)
     sun.sun = True
 
+    mercury = Planet(0.387 * Planet.AU, 0, 8, (80, 78, 81), 3.30 * 10**23)
+    mercury.y_vel = -47.4 * 1000  # 47.4
+
+    venus = Planet(0.723 * Planet.AU, 0, 14, (255, 255, 255), 4.8685 * 10**24)
+    venus.y_vel = -35.02 * 1000  # 35.02
+
     earth = Planet(-1 * Planet.AU, 0, 16, (100, 149, 237), 5.9742 * 10**24)
     earth.y_vel = 29.783 * 1000  # 29.783 km/s
 
     mars = Planet(-1.52 * Planet.AU, 0, 12, (188, 39, 50), 6.39 * 10**24)
     mars.y_vel = 24.077 * 1000
 
-    planets = [sun, earth, mars]
+    ceres = Planet(-2.77 * Planet.AU, 0, 10, (255, 255, 255), 9.393e20)
+    ceres.y_vel = 17.9 * 1000
+    
+    jupiter = Planet(5.2 * Planet.AU, 0, 22, (255, 165, 0), 1.898 * 10**27)
+    jupiter.y_vel = -13.06 * 1000
+
+    saturn = Planet(9.58 * Planet.AU, 0, 20, (210, 180, 140), 5.683 * 10**26)
+    saturn.y_vel = -9.68 * 1000
+
+    uranus = Planet(19.2 * Planet.AU, 0, 18, (0, 255, 255), 8.681 * 10**25)
+    uranus.y_vel = -6.80 * 1000
+
+    neptune = Planet(30 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26)
+    neptune.y_vel = -5.43 * 1000
+
+    pluto = Planet(39.48 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22)
+    pluto.y_vel = -4.74 * 1000
+
+    planets = [sun, mercury, venus, earth, mars, ceres, jupiter, saturn, uranus, neptune, pluto]
 
     while running:
         clock.tick(60)
@@ -131,10 +158,18 @@ def main():
                     (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)),
                     random.uniform(1e23, 1e25)  # Mass between 10^23 and 10^25 kg
                 )
-                # Optionally, set an initial velocity
+
                 new_planet.y_vel = random.uniform(-30000, 30000)
                 new_planet.x_vel = random.uniform(-30000, 30000)
                 planets.append(new_planet)
+
+            if event.type == pygame.MOUSEWHEEL:
+                if event.y > 0:
+                    Planet.SCALE *= 1.1
+                elif event.y < 0:
+                    Planet.SCALE /= 1.1
+
+                Planet.SCALE = max(10 / Planet.AU, min(Planet.SCALE, 1000 / Planet.AU))
 
         for planet in planets:
             planet.update_position(planets)
@@ -149,7 +184,7 @@ def main():
 
 main()
 
-'''
+''' TO BE FIXED LATER
         for planet in planets:
             if planet.sun and len(planet) > 0:
                 continue
@@ -169,4 +204,4 @@ main()
                 periapsis = min(planet.distances)
                 apoapsis = max(planet.distances)
              print(f"{planet} periapsis: {periapsis}, apoapsis: {apoapsis}")
-'''
+'''# TO BE FIXED LATER
