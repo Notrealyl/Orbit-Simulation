@@ -1,6 +1,8 @@
 import pygame
 import random
 import math
+import time
+import matplotlib.pyplot as plt
 
 #------------------------------------------------------------------------------
 fps = 30
@@ -28,16 +30,27 @@ class Planet: # Class to represent a planet
     SCALE = 50 / AU  # Define AU which can be changed
     TIMESTEP = 3600 * 24  # 1 day in seconds
 
-    def __init__(self, x, y, radius, color, mass): #define initial values
+    def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
         self.y = y
         self.radius = radius
         self.color = color
         self.mass = mass
+        self.name = name
 
         self.orbit = []
         self.sun = False
         self.distance_from_sun = 0
+        self.previous_orbit_angle = None
+        self.orbit_completed = 0
+
+        self.eccentricity = 0
+        self.eccentricity_history = []
+        self.periapsis = 0
+        self.apoapsis = 0
+
+        self.time_history = []  # To track time for eccentricity plotting
+        self.speed_history = []
 
         self.x_vel = 0
         self.y_vel = 0
@@ -106,40 +119,49 @@ def main():
     #Argument: x, y, radius, color, mass
     #AU => Astronomical Unit = distance from Earth to Sun = 149.6 million km
 
-    sun = Planet(0, 0, 15, (255, 255, 0), 1.98892 * 10**30)
+    sun = Planet(0, 0, 15, (255, 255, 0), 1.98892 * 10**30, "Sun")
     sun.sun = True
 
-    mercury = Planet(0.387 * Planet.AU, 0, 8, (80, 78, 81), 3.30 * 10**23)
+    mercury = Planet(0.387 * Planet.AU, 0, 8, (80, 78, 81), 3.30 * 10**23, "Mercury")
     mercury.y_vel = -47.4 * 1000  # 47.4
 
-    venus = Planet(0.723 * Planet.AU, 0, 14, (255, 255, 255), 4.8685 * 10**24)
+    venus = Planet(0.723 * Planet.AU, 0, 14, (255, 255, 255), 4.8685 * 10**24, "Venus")
     venus.y_vel = -35.02 * 1000  # 35.02
 
-    earth = Planet(-1 * Planet.AU, 0, 16, (100, 149, 237), 5.9742 * 10**24)
+    earth = Planet(-1 * Planet.AU, 0, 16, (100, 149, 237), 5.9742 * 10**24, "Earth")
     earth.y_vel = 29.783 * 1000  # 29.783 km/s
 
-    mars = Planet(-1.52 * Planet.AU, 0, 12, (188, 39, 50), 6.39 * 10**24)
+    mars = Planet(-1.52 * Planet.AU, 0, 12, (188, 39, 50), 6.39 * 10**24, "Mars")
     mars.y_vel = 24.077 * 1000
 
-    ceres = Planet(-2.77 * Planet.AU, 0, 10, (255, 255, 255), 9.393e20)
+    ceres = Planet(-2.77 * Planet.AU, 0, 10, (255, 255, 255), 9.393e20, "Ceres")
     ceres.y_vel = 17.9 * 1000
     
-    jupiter = Planet(5.2 * Planet.AU, 0, 22, (255, 165, 0), 1.898 * 10**27)
+    jupiter = Planet(5.2 * Planet.AU, 0, 22, (255, 165, 0), 1.898 * 10**27, "Jupiter")
     jupiter.y_vel = -13.06 * 1000
 
-    saturn = Planet(9.58 * Planet.AU, 0, 20, (210, 180, 140), 5.683 * 10**26)
+    saturn = Planet(9.58 * Planet.AU, 0, 20, (210, 180, 140), 5.683 * 10**26, "Saturn")
     saturn.y_vel = -9.68 * 1000
 
-    uranus = Planet(19.2 * Planet.AU, 0, 18, (0, 255, 255), 8.681 * 10**25)
+    uranus = Planet(19.2 * Planet.AU, 0, 18, (0, 255, 255), 8.681 * 10**25, "Uranus")
     uranus.y_vel = -6.80 * 1000
 
-    neptune = Planet(30 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26)
+    neptune = Planet(30 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26, "Neptune")
     neptune.y_vel = -5.43 * 1000
 
-    pluto = Planet(39.48 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22)
+    pluto = Planet(39.48 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22, "Pluto")
     pluto.y_vel = -4.74 * 1000
 
     #------------------------------------------------------------------------------ PLANETS-
+
+    planet_data = {
+            "name": [],
+            "eccentricity": [],
+            "periapsis_AU": [],
+            "apoapsis_AU": []
+    }
+
+    #------------------------------------------------------------------------------ MAIN LOOP-
 
     planets = [sun, mercury, venus, earth, mars, ceres, jupiter, saturn, uranus, neptune, pluto]
 
@@ -151,7 +173,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not planet.sun:
 
                 mouse_x, mouse_y = event.pos
                 # Convert screen coordinates to simulation coordinates
@@ -160,7 +182,7 @@ def main():
 
                 closest_planet = min(planets, key=lambda p: math.hypot(p.x * Planet.SCALE + center_x - mouse_x, p.y * Planet.SCALE + center_y - mouse_y))
 
-                newspd = random.uniform(-5000, 5000)
+                newspd = 1000
 
                 closest_planet.x_vel += newspd
                 closest_planet.y_vel += newspd
@@ -200,33 +222,50 @@ def main():
             planet.update_position(planets)
             planet.draw(screen)
 
-        periapsis = 0
-        apoapsis = 0
+            orbit_angle = math.atan2(planet.y - sun.y, planet.x - sun.x) # Angle of the planet in its orbit around the sun, Calculate if the planet has completed an orbit
+            if not planet.sun:
+                if planet.previous_orbit_angle is not None:
+                    if (planet.previous_orbit_angle < 0 and orbit_angle >= 0) or (planet.previous_orbit_angle > 0 and orbit_angle <= 0):
+                        #print(f"{planet.name} completed an orbit around the sun." f" Total orbits: {planet.orbit_completed + 1}")
+                        planet.orbit_completed += 1
+
+                planet.previous_orbit_angle = orbit_angle
+
+            if not planet.sun and planet.orbit_completed >= 1: # Calculate eccentricity, periapsis, and apoapsis after one complete orbit
+                planet.periapsis = min(math.sqrt(x**2 + y**2) for x, y in planet.orbit)
+                planet.apoapsis = max(math.sqrt(x**2 + y**2) for x, y in planet.orbit)
+
+                planet.eccentricity = (planet.apoapsis - planet.periapsis) / (planet.apoapsis + planet.periapsis)
+                #print(f"{planet.name} Eccentricity: {planet.eccentricity}, Periapsis: {planet.periapsis/Planet.AU} AU, Apoapsis: {planet.apoapsis/Planet.AU} AU")
+
+                planet.orbit = planet.orbit[-(5000):] # Keep only the last 5000 points to optimize performance
+                planet.eccentricity_history.append(planet.eccentricity)
+                planet.time_history.append(len(planet.eccentricity_history) * (Planet.TIMESTEP / 86400))  # Convert time to days
+                planet.speed_history.append(math.sqrt(planet.x_vel**2 + planet.y_vel**2))  # Speed in km/s
+
+                if planet.name not in planet_data["name"]: # Store data for plotting
+                    planet_data["name"].append(planet.name)
+                    planet_data["eccentricity"].append(planet.eccentricity)
+                    planet_data["periapsis_AU"].append(planet.periapsis / Planet.AU)
+                    planet_data["apoapsis_AU"].append(planet.apoapsis / Planet.AU)
 
         pygame.display.update() # Update the display
 
     pygame.quit()
 
+    planet1 = mercury
+    planet2 = venus
+    planet3 = earth
+
+    plt.plot(planet1.time_history, planet1.speed_history, color='blue', label=planet1.name)
+    plt.plot(planet2.time_history, planet2.speed_history, color='red', label=planet2.name)
+    plt.plot(planet3.time_history, planet3.speed_history, color='green', label=planet3.name)
+
+    plt.xlabel("Time (days)")
+    plt.ylabel("Speed")
+    plt.title(f"Speed of {planet1.name} Over Time")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
 main()
-
-''' TO BE FIXED LATER
-        for planet in planets:
-            if planet.sun and len(planet) > 0:
-                continue
-            if planet != sun:
-                distance_x = sun.x - planet[len(planet)].x 
-                distance_y = sun.y - planet[len(planet)].y
-
-                distance = math.sqrt(distance_x**2 + distance_y**2)
-
-            if not hasattr(planet, "distances"):
-                planet.distances = []
-                planet.distances.append(distance)
-
-            for planet in planets:
-                if planet.sun:
-                    continue
-                periapsis = min(planet.distances)
-                apoapsis = max(planet.distances)
-             print(f"{planet} periapsis: {periapsis}, apoapsis: {apoapsis}")
-'''# TO BE FIXED LATER
