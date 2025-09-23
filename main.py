@@ -28,7 +28,7 @@ class Planet: # Class to represent a planet
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     SCALE = 50 / AU  # Define AU which can be changed
-    TIMESTEP = 3600 * 24  # 1 day in seconds
+    TIMESTEP = 3600 * 6  # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
@@ -51,6 +51,8 @@ class Planet: # Class to represent a planet
 
         self.time_history = []  # To track time for eccentricity plotting
         self.speed_history = []
+        self.distance_from_sun_history = []
+        self.acceleration_history = []
 
         self.x_vel = 0
         self.y_vel = 0
@@ -76,7 +78,7 @@ class Planet: # Class to represent a planet
             distance_text = FONT.render(f"{round(self.distance_from_sun / 149597870700, 5)}au", 1, (255, 255, 255))
             screen.blit(distance_text, (x - distance_text.get_width()/2, y - distance_text.get_height()/2))
 
-            speed_text = FONT.render(f"{round(math.sqrt(self.x_vel**2 + self.y_vel**2), 2)}km/s", 1, (255, 255, 255))
+            speed_text = FONT.render(f"{round(math.sqrt(self.x_vel**2 + self.y_vel**2) / 1000, 2)}km/s", 1, (255, 255, 255))
             screen.blit(speed_text, (x - speed_text.get_width()/2, y + speed_text.get_height()/2))
         
     def attraction(self, other): #PHYSICS PART
@@ -239,9 +241,13 @@ def main():
                 #print(f"{planet.name} Eccentricity: {planet.eccentricity}, Periapsis: {planet.periapsis/Planet.AU} AU, Apoapsis: {planet.apoapsis/Planet.AU} AU")
 
                 planet.orbit = planet.orbit[-(5000):] # Keep only the last 5000 points to optimize performance
+
                 planet.eccentricity_history.append(planet.eccentricity)
-                planet.time_history.append(len(planet.eccentricity_history) * (Planet.TIMESTEP / 86400))  # Convert time to days
+                
                 planet.speed_history.append(math.sqrt(planet.x_vel**2 + planet.y_vel**2))  # Speed in km/s
+                planet.distance_from_sun_history.append(planet.distance_from_sun / Planet.AU)  # Distance in AU
+
+                planet.time_history.append(len(planet.time_history) * (Planet.TIMESTEP / 86400))  # Time in days
 
                 if planet.name not in planet_data["name"]: # Store data for plotting
                     planet_data["name"].append(planet.name)
@@ -253,17 +259,47 @@ def main():
 
     pygame.quit()
 
+    #<[---------------------------------------------------------------------------------------------------------]>
+    #<[---------------------------------------------PLOTTTING PART---------------------------------------------]>
+    #<[---------------------------------------------PLOTTTING PART---------------------------------------------]>
+    #<[---------------------------------------------------------------------------------------------------------]>
+
     planet1 = mercury
     planet2 = venus
     planet3 = earth
 
+    #------------------------------------------------------Speed over time-----------------------------------------------------------------------------------
     plt.plot(planet1.time_history, planet1.speed_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.speed_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.speed_history, color='green', label=planet3.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Speed")
-    plt.title(f"Speed of {planet1.name} Over Time")
+    plt.title(f"Speed of {planet1.name}, {planet2.name} and {planet3.name}  Over Time")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    #-------------------------------------------------------Eccentricity over time----------------------------------------------------------------------------------
+    plt.plot(planet1.time_history, planet1.eccentricity_history, color='blue', label=planet1.name)
+    plt.plot(planet2.time_history, planet2.eccentricity_history, color='red', label=planet2.name)
+    plt.plot(planet3.time_history, planet3.eccentricity_history, color='green', label=planet3.name)
+
+    plt.xlabel("Time (days)")
+    plt.ylabel("Eccentricity")
+    plt.title(f"Eccentricity of {planet1.name}, {planet2.name} and {planet3.name} Over Time")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    #------------------------------------------------------------Distance from sun over time-----------------------------------------------------------------------------
+    plt.plot(planet1.time_history, planet1.distance_from_sun_history, color='blue', label=planet1.name)
+    plt.plot(planet2.time_history, planet2.distance_from_sun_history, color='red', label=planet2.name)
+    plt.plot(planet3.time_history, planet3.distance_from_sun_history, color='green', label=planet3.name)
+
+    plt.xlabel("Time (days)")
+    plt.ylabel("Distance from Sun (AU)")
+    plt.title(f"Distance from Sun of {planet1.name}, {planet2.name} and {planet3.name} Over Time")
     plt.grid(True)
     plt.legend()
     plt.show()
