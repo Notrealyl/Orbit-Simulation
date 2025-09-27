@@ -28,7 +28,7 @@ class Planet: # Class to represent a planet
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     SCALE = 50 / AU  # Define AU which can be changed
-    TIMESTEP = 3600 * 6  # 1 day in seconds
+    TIMESTEP = 3600 * 24  # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
@@ -49,7 +49,7 @@ class Planet: # Class to represent a planet
         self.periapsis = 0
         self.apoapsis = 0
 
-        self.time_history = []  # To track time for eccentricity plotting
+        self.time_history = []  # To track time 
         self.speed_history = []
         self.distance_from_sun_history = []
         self.acceleration_history = []
@@ -81,10 +81,9 @@ class Planet: # Class to represent a planet
             speed_text = FONT.render(f"{round(math.sqrt(self.x_vel**2 + self.y_vel**2) / 1000, 2)}km/s", 1, (255, 255, 255))
             screen.blit(speed_text, (x - speed_text.get_width()/2, y + speed_text.get_height()/2))
         
-    def attraction(self, other): #PHYSICS PART
-        other_x, other_y = other.x, other.y
-        distance_x = other_x - self.x
-        distance_y = other_y - self.y
+    def attraction(self, other, x, y): #PHYSICS PART
+        distance_x = other.x - x
+        distance_y = other.y - y
         distance = math.sqrt(distance_x**2 + distance_y**2) # Pythagorean theorem to find distance between two planets
 
         if other.sun:
@@ -97,21 +96,44 @@ class Planet: # Class to represent a planet
         force_y = math.sin(theta) * force # F_y = F * sin(theta)
         return force_x, force_y 
     
-    def update_position(self, planets):
+    def derivative(self, planets, x, y, vx, vy): # Calculate derivatives for RK4 method
         total_fx = total_fy = 0 # total force in x and y direction
+
         for planet in planets:
             if self == planet:
                 continue
 
-            fx, fy = self.attraction(planet) # get force exerted by each planet
+            fx, fy = self.attraction(planet, x, y) # get force exerted by each planet
             total_fx += fx # sum up all forces in x direction
             total_fy += fy # sum up all forces in y direction
 
-        self.x_vel += total_fx / self.mass * self.TIMESTEP # F = m * a  =>  a = F / m  =>  v = a * t
-        self.y_vel += total_fy / self.mass * self.TIMESTEP
+        ax = total_fx / self.mass # F = m * a  =>  a = F / m
+        ay = total_fy / self.mass # acceleration in y direction
 
-        self.x += self.x_vel * self.TIMESTEP # delta x = v_x * t =>  new x = old x + delta x
-        self.y += self.y_vel * self.TIMESTEP
+        return (vx, vy, ax, ay) # return derivatives: dx/dt = vx, dy/dt = vy, dvx/dt = ax, dvy/dt = ay
+    
+    def rk4_step(self, planets, dt): # Runge-Kutta 4th order method for updating position and velocity
+        x, y, vx, vy = self.x, self.y, self.x_vel, self.y_vel # current state
+        dt = self.TIMESTEP
+
+        dx1, dy1, dvx1, dvy1 = self.derivative(planets, x, y, vx, vy) # K1 FIRST STEP
+
+        dx2, dy2, dvx2, dvy2 = self.derivative(planets, x + 0.5 * dx1 * dt, y + 0.5 * dy1 * dt, vx + 0.5 * dvx1 * dt, vy + 0.5 * dvy1 * dt) # K2 SECOND STEP, Take half step using K1
+
+        dx3, dy3, dvx3, dvy3 = self.derivative(planets, x + 0.5 * dx2 * dt, y + 0.5 * dy2 * dt, vx + 0.5 * dvx2 * dt, vy + 0.5 * dvy2 * dt) # K3 THIRD STEP, Take half step using K2
+
+        dx4, dy4, dvx4, dvy4 = self.derivative(planets, x + dx3 * dt, y + dy3 * dt, vx + dvx3 * dt, vy + dvy3 * dt) # K4 FOURTH STEP, Take full step using K3
+
+        self.x += (dx1 + 2 * dx2 + 2 * dx3 + dx4) / 6 * dt # Average the slopes to get new position and velocity
+        self.y += (dy1 + 2 * dy2 + 2 * dy3 + dy4) / 6 * dt
+        self.x_vel += (dvx1 + 2 * dvx2 + 2 * dvx3 + dvx4) / 6 * dt
+        self.y_vel += (dvy1 + 2 * dvy2 + 2 * dvy3 + dvy4) / 6 * dt
+    
+    def update_position(self, planets):
+        if Planet.TIMESTEP == 0:
+            return  # Skip updating position if paused
+
+        self.rk4_step(planets, Planet.TIMESTEP) # Update position using RK4 method
         self.orbit.append((self.x, self.y))
 
 def main():
@@ -181,16 +203,8 @@ def main():
                 # Convert screen coordinates to simulation coordinates
                 sim_x = (mouse_x - center_x) / Planet.SCALE
                 sim_y = (mouse_y - center_y) / Planet.SCALE
-
-                closest_planet = min(planets, key=lambda p: math.hypot(p.x * Planet.SCALE + center_x - mouse_x, p.y * Planet.SCALE + center_y - mouse_y))
-
-                newspd = 1000
-
-                closest_planet.x_vel += newspd
-                closest_planet.y_vel += newspd
-
                 # Create a new planet with random color, radius, and mass
-                ''' 
+                
                 new_planet = Planet(
                     sim_x, sim_y,
                     random.randint(5, 15),
@@ -201,8 +215,9 @@ def main():
                 # Assign random initial velocities
                 new_planet.y_vel = random.uniform(-30000, 30000)
                 new_planet.x_vel = random.uniform(-30000, 30000)
+                new_planet.name = f"Planet{len(planets)}"
                 planets.append(new_planet)
-                '''
+                print(f"Added new planet {new_planet.name} at ({sim_x/Planet.AU:.2f} AU, {sim_y/Planet.AU:.2f} AU) with mass {new_planet.mass:.2e} kg and velocity ({new_planet.x_vel:.2f}, {new_planet.y_vel:.2f}) m/s")
             
             if event.type == pygame.MOUSEWHEEL: # Zoom in/out with mouse wheel
                 if event.y > 0:
