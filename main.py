@@ -28,7 +28,7 @@ class Planet: # Class to represent a planet
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     SCALE = 50 / AU  # Define AU which can be changed
-    TIMESTEP = 3600 * 24  # 1 day in seconds
+    TIMESTEP = 3600 * 10 # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
@@ -48,11 +48,18 @@ class Planet: # Class to represent a planet
         self.eccentricity_history = []
         self.periapsis = 0
         self.apoapsis = 0
+        self.kinetic = 0
+        self.potential = 0
+        self.angular_momentum = 0
+
 
         self.time_history = []  # To track time 
         self.speed_history = []
         self.distance_from_sun_history = []
         self.acceleration_history = []
+        self.kinetic_history = []
+        self.potential_history = []
+        self.angular_momentum_history = []
 
         self.x_vel = 0
         self.y_vel = 0
@@ -136,9 +143,10 @@ class Planet: # Class to represent a planet
         self.rk4_step(planets, Planet.TIMESTEP) # Update position using RK4 method
         self.orbit.append((self.x, self.y))
 
+
+
 def main():
     running = True
-
     #------------------------------------------------------------------------------ PLANETS-
     #Argument: x, y, radius, color, mass
     #AU => Astronomical Unit = distance from Earth to Sun = 149.6 million km
@@ -146,8 +154,8 @@ def main():
     sun = Planet(0, 0, 15, (255, 255, 0), 1.98892 * 10**30, "Sun")
     sun.sun = True
 
-    mercury = Planet(0.387 * Planet.AU, 0, 8, (80, 78, 81), 3.30 * 10**23, "Mercury")
-    mercury.y_vel = -47.4 * 1000  # 47.4
+    mercury = Planet(0.307 * Planet.AU, 0, 8, (80, 78, 81), 3.30 * 10**23, "Mercury")
+    mercury.y_vel = -58.98 * 1000  # 47.4 km/s
 
     venus = Planet(0.723 * Planet.AU, 0, 14, (255, 255, 255), 4.8685 * 10**24, "Venus")
     venus.y_vel = -35.02 * 1000  # 35.02
@@ -173,8 +181,8 @@ def main():
     neptune = Planet(30 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26, "Neptune")
     neptune.y_vel = -5.43 * 1000
 
-    pluto = Planet(39.48 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22, "Pluto")
-    pluto.y_vel = -4.74 * 1000
+    pluto = Planet(29.7 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22, "Pluto")
+    pluto.y_vel = -6.10 * 1000
 
     #------------------------------------------------------------------------------ PLANETS-
 
@@ -232,7 +240,7 @@ def main():
                     if Planet.TIMESTEP != 0:
                         Planet.TIMESTEP = 0
                     else:
-                        Planet.TIMESTEP = 3600 * 24
+                        Planet.TIMESTEP = 3600 * 10
 
 
         for planet in planets: # Update and draw each planet
@@ -247,6 +255,9 @@ def main():
                         planet.orbit_completed += 1
 
                 planet.previous_orbit_angle = orbit_angle
+            elif planet.sun:
+                planet.x_vel = 0
+                planet.y_vel = 0
 
             if not planet.sun and planet.orbit_completed >= 1: # Calculate eccentricity, periapsis, and apoapsis after one complete orbit
                 planet.periapsis = min(math.sqrt(x**2 + y**2) for x, y in planet.orbit)
@@ -255,12 +266,18 @@ def main():
                 planet.eccentricity = (planet.apoapsis - planet.periapsis) / (planet.apoapsis + planet.periapsis)
                 #print(f"{planet.name} Eccentricity: {planet.eccentricity}, Periapsis: {planet.periapsis/Planet.AU} AU, Apoapsis: {planet.apoapsis/Planet.AU} AU")
 
-                planet.orbit = planet.orbit[-(5000):] # Keep only the last 5000 points to optimize performance
+                planet.kinetic = 0.5 * planet.mass * (planet.x_vel**2 + planet.y_vel**2) # Kinetic energy 1/2 mv^2
+                planet.potential = -planet.G * sun.mass * planet.mass / planet.distance_from_sun # Potential energy -GMm/r
+                planet.angular_momentum = planet.mass * math.sqrt(planet.x_vel**2 + planet.y_vel**2) * planet.distance_from_sun  # Angular momentum L = mvr
+
+                planet.orbit = planet.orbit[-(1000):] # Keep only the last 1000 points to optimize performance
 
                 planet.eccentricity_history.append(planet.eccentricity)
-                
+                planet.kinetic_history.append(planet.kinetic)  # Kinetic energy in 10^24 Joules
+                planet.potential_history.append(planet.potential)  # Potential energy in 10^24 Joules
                 planet.speed_history.append(math.sqrt(planet.x_vel**2 + planet.y_vel**2))  # Speed in km/s
                 planet.distance_from_sun_history.append(planet.distance_from_sun / Planet.AU)  # Distance in AU
+                planet.angular_momentum_history.append(planet.angular_momentum)  # Angular momentum in 10^40 kg*m^2/s
 
                 planet.time_history.append(len(planet.time_history) * (Planet.TIMESTEP / 86400))  # Time in days
 
@@ -282,6 +299,13 @@ def main():
     planet1 = mercury
     planet2 = venus
     planet3 = earth
+    planet4 = mars
+    beltplanet = ceres
+    planet5 = jupiter
+    planet6 = saturn
+    planet7 = uranus
+    planet8 = neptune
+    planet9 = pluto
 
     #------------------------------------------------------Speed over time-----------------------------------------------------------------------------------
     plt.plot(planet1.time_history, planet1.speed_history, color='blue', label=planet1.name)
@@ -315,6 +339,31 @@ def main():
     plt.xlabel("Time (days)")
     plt.ylabel("Distance from Sun (AU)")
     plt.title(f"Distance from Sun of {planet1.name}, {planet2.name} and {planet3.name} Over Time")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    #------------------------------------------------------------Kinetic and Potential Energy over time-----------------------------------------------------------------------------
+    plt.plot(planet1.time_history, planet1.kinetic_history, color='blue', label=f"{planet2.name} Kinetic")
+    plt.plot(planet1.time_history, planet1.potential_history, color='cyan', label=f"{planet2.name} Potential")
+
+    plt.plot(planet1.time_history, [planet1.kinetic_history + planet1.potential_history for planet1.kinetic_history, planet1.potential_history in zip(planet1.kinetic_history, planet1.potential_history)], color='navy', label=f"{planet1.name} Total")
+
+    plt.xlabel("Time (days)")
+    plt.ylabel("Energy")
+    plt.title(f"Kinetic and Potential Energy of {planet1.name} Over Time")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    #------------------------------------------------------------Angular Momentum over time-----------------------------------------------------------------------------
+    plt.plot(planet1.time_history, planet1.angular_momentum_history, color='blue', label=planet1.name)
+    plt.plot(planet2.time_history, planet2.angular_momentum_history, color='red', label=planet2.name)
+    plt.plot(planet3.time_history, planet3.angular_momentum_history, color='green', label=planet3.name)
+    
+    plt.xlabel("Time (days)")
+    plt.ylabel("Angular Momentum")
+    plt.title(f"Angular Momentum of {planet1.name}, {planet2.name} and {planet3.name} Over Time")
     plt.grid(True)
     plt.legend()
     plt.show()
