@@ -178,11 +178,11 @@ def main():
     uranus = Planet(19.2 * Planet.AU, 0, 18, (0, 255, 255), 8.681 * 10**25, "Uranus")
     uranus.y_vel = -6.80 * 1000
 
-    neptune = Planet(30 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26, "Neptune")
+    neptune = Planet(30.05 * Planet.AU, 0, 18, (0, 0, 255), 1.024 * 10**26, "Neptune")
     neptune.y_vel = -5.43 * 1000
 
-    pluto = Planet(29.7 * Planet.AU, 0, 10, (255, 255, 255), 1.30900 * 10**22, "Pluto")
-    pluto.y_vel = -6.10 * 1000
+    pluto = Planet(39.48 * Planet.AU, 0, 6, (255, 255, 255), 1.30900 * 10**22, "Pluto")
+    pluto.y_vel = -4.74 * 1000
 
     #------------------------------------------------------------------------------ PLANETS-
 
