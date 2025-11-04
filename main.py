@@ -158,10 +158,10 @@ def main():
     mercury.y_vel = -58.98 * 1000  # 47.4 km/s
 
     venus = Planet(0.723 * Planet.AU, 0, 14, (255, 255, 255), 4.8685 * 10**24, "Venus")
-    venus.y_vel = -35.02 * 1000  # 35.02
+    venus.y_vel = -35.02 * 1000 # 35.02
 
     earth = Planet(-1 * Planet.AU, 0, 16, (100, 149, 237), 5.9742 * 10**24, "Earth")
-    earth.y_vel = 29.783 * 1000  # 29.783 km/s
+    earth.y_vel = 29.783 * 1000 # 29.783 km/s
 
     mars = Planet(-1.52 * Planet.AU, 0, 12, (188, 39, 50), 6.39 * 10**24, "Mars")
     mars.y_vel = 24.077 * 1000
@@ -311,6 +311,13 @@ def main():
     plt.plot(planet1.time_history, planet1.speed_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.speed_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.speed_history, color='green', label=planet3.name)
+    plt.plot(planet4.time_history, planet4.speed_history, color='orange', label=planet4.name)
+    plt.plot(beltplanet.time_history, beltplanet.speed_history, color='grey', label=beltplanet.name)
+    plt.plot(planet5.time_history, planet5.speed_history, color='brown', label=planet5.name)
+    plt.plot(planet6.time_history, planet6.speed_history, color='yellow', label=planet6.name)
+    plt.plot(planet7.time_history, planet7.speed_history, color='cyan', label=planet7.name)
+    plt.plot(planet8.time_history, planet8.speed_history, color='navy', label=planet8.name)
+    plt.plot(planet9.time_history, planet9.speed_history, color='purple', label=planet9.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Speed")
@@ -323,6 +330,13 @@ def main():
     plt.plot(planet1.time_history, planet1.eccentricity_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.eccentricity_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.eccentricity_history, color='green', label=planet3.name)
+    plt.plot(planet4.time_history, planet4.eccentricity_history, color='orange', label=planet4.name)
+    plt.plot(beltplanet.time_history, beltplanet.eccentricity_history, color='grey', label=beltplanet.name)
+    plt.plot(planet5.time_history, planet5.eccentricity_history, color='brown', label=planet5.name)
+    plt.plot(planet6.time_history, planet6.eccentricity_history, color='yellow', label=planet6.name)
+    plt.plot(planet7.time_history, planet7.eccentricity_history, color='cyan', label=planet7.name)
+    plt.plot(planet8.time_history, planet8.eccentricity_history, color='navy', label=planet8.name)
+    plt.plot(planet9.time_history, planet9.eccentricity_history, color='purple', label=planet9.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Eccentricity")
@@ -335,6 +349,13 @@ def main():
     plt.plot(planet1.time_history, planet1.distance_from_sun_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.distance_from_sun_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.distance_from_sun_history, color='green', label=planet3.name)
+    plt.plot(planet4.time_history, planet4.distance_from_sun_history, color='orange', label=planet4.name)
+    plt.plot(beltplanet.time_history, beltplanet.distance_from_sun_history, color='grey', label=beltplanet.name)
+    plt.plot(planet5.time_history, planet5.distance_from_sun_history, color='brown', label=planet5.name)
+    plt.plot(planet6.time_history, planet6.distance_from_sun_history, color='yellow', label=planet6.name)
+    plt.plot(planet7.time_history, planet7.distance_from_sun_history, color='cyan', label=planet7.name)
+    plt.plot(planet8.time_history, planet8.distance_from_sun_history, color='navy', label=planet8.name)
+    plt.plot(planet9.time_history, planet9.distance_from_sun_history, color='purple', label=planet9.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Distance from Sun (AU)")
@@ -360,6 +381,13 @@ def main():
     plt.plot(planet1.time_history, planet1.angular_momentum_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.angular_momentum_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.angular_momentum_history, color='green', label=planet3.name)
+    plt.plot(planet4.time_history, planet4.angular_momentum_history, color='orange', label=planet4.name)
+    plt.plot(beltplanet.time_history, beltplanet.angular_momentum_history, color='grey', label=beltplanet.name)
+    plt.plot(planet5.time_history, planet5.angular_momentum_history, color='brown', label=planet5.name)
+    plt.plot(planet6.time_history, planet6.angular_momentum_history, color='yellow', label=planet6.name)
+    plt.plot(planet7.time_history, planet7.angular_momentum_history, color='cyan', label=planet7.name)
+    plt.plot(planet8.time_history, planet8.angular_momentum_history, color='navy', label=planet8.name)
+    plt.plot(planet9.time_history, planet9.angular_momentum_history, color='purple', label=planet9.name)
     
     plt.xlabel("Time (days)")
     plt.ylabel("Angular Momentum")
