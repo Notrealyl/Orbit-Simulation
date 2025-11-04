@@ -15,7 +15,6 @@ center_x = screen_width // 2
 center_y = screen_height // 2
 
 scale_radius = 0.5
-
 #------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -240,6 +239,14 @@ def main():
                     if Planet.TIMESTEP != 0:
                         Planet.TIMESTEP = 0
                     else:
+                        Planet.TIMESTEP = 3600 * 10
+
+                elif event.key == pygame.K_UP: # Increase speed with up arrow
+                    Planet.TIMESTEP *= 2
+
+                elif event.key == pygame.K_DOWN: # Decrease speed with down arrow
+                    Planet.TIMESTEP /= 2
+                    if Planet.TIMESTEP < 3600 * 10:
                         Planet.TIMESTEP = 3600 * 10
 
 
