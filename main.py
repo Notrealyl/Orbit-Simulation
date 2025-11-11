@@ -27,7 +27,7 @@ class Planet: # Class to represent a planet
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     SCALE = 50 / AU  # Define AU which can be changed
-    TIMESTEP = 3600 * 10 # 1 day in seconds
+    TIMESTEP = 3600 * 12 # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
@@ -318,13 +318,6 @@ def main():
     plt.plot(planet1.time_history, planet1.speed_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.speed_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.speed_history, color='green', label=planet3.name)
-    plt.plot(planet4.time_history, planet4.speed_history, color='orange', label=planet4.name)
-    plt.plot(beltplanet.time_history, beltplanet.speed_history, color='grey', label=beltplanet.name)
-    plt.plot(planet5.time_history, planet5.speed_history, color='brown', label=planet5.name)
-    plt.plot(planet6.time_history, planet6.speed_history, color='yellow', label=planet6.name)
-    plt.plot(planet7.time_history, planet7.speed_history, color='cyan', label=planet7.name)
-    plt.plot(planet8.time_history, planet8.speed_history, color='navy', label=planet8.name)
-    plt.plot(planet9.time_history, planet9.speed_history, color='purple', label=planet9.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Speed")
@@ -337,13 +330,6 @@ def main():
     plt.plot(planet1.time_history, planet1.eccentricity_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.eccentricity_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.eccentricity_history, color='green', label=planet3.name)
-    plt.plot(planet4.time_history, planet4.eccentricity_history, color='orange', label=planet4.name)
-    plt.plot(beltplanet.time_history, beltplanet.eccentricity_history, color='grey', label=beltplanet.name)
-    plt.plot(planet5.time_history, planet5.eccentricity_history, color='brown', label=planet5.name)
-    plt.plot(planet6.time_history, planet6.eccentricity_history, color='yellow', label=planet6.name)
-    plt.plot(planet7.time_history, planet7.eccentricity_history, color='cyan', label=planet7.name)
-    plt.plot(planet8.time_history, planet8.eccentricity_history, color='navy', label=planet8.name)
-    plt.plot(planet9.time_history, planet9.eccentricity_history, color='purple', label=planet9.name)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Eccentricity")
@@ -356,13 +342,7 @@ def main():
     plt.plot(planet1.time_history, planet1.distance_from_sun_history, color='blue', label=planet1.name)
     plt.plot(planet2.time_history, planet2.distance_from_sun_history, color='red', label=planet2.name)
     plt.plot(planet3.time_history, planet3.distance_from_sun_history, color='green', label=planet3.name)
-    plt.plot(planet4.time_history, planet4.distance_from_sun_history, color='orange', label=planet4.name)
-    plt.plot(beltplanet.time_history, beltplanet.distance_from_sun_history, color='grey', label=beltplanet.name)
-    plt.plot(planet5.time_history, planet5.distance_from_sun_history, color='brown', label=planet5.name)
-    plt.plot(planet6.time_history, planet6.distance_from_sun_history, color='yellow', label=planet6.name)
-    plt.plot(planet7.time_history, planet7.distance_from_sun_history, color='cyan', label=planet7.name)
-    plt.plot(planet8.time_history, planet8.distance_from_sun_history, color='navy', label=planet8.name)
-    plt.plot(planet9.time_history, planet9.distance_from_sun_history, color='purple', label=planet9.name)
+
 
     plt.xlabel("Time (days)")
     plt.ylabel("Distance from Sun (AU)")
@@ -372,14 +352,14 @@ def main():
     plt.show()
 
     #------------------------------------------------------------Kinetic and Potential Energy over time-----------------------------------------------------------------------------
-    plt.plot(planet1.time_history, planet1.kinetic_history, color='blue', label=f"{planet2.name} Kinetic")
-    plt.plot(planet1.time_history, planet1.potential_history, color='cyan', label=f"{planet2.name} Potential")
+    plt.plot(planet1.time_history, planet1.kinetic_history, color='blue', label=f"{planet1.name} Kinetic")
+    plt.plot(planet1.time_history, planet1.potential_history, color='cyan', label=f"{planet1.name} Potential")
 
     plt.plot(planet1.time_history, [planet1.kinetic_history + planet1.potential_history for planet1.kinetic_history, planet1.potential_history in zip(planet1.kinetic_history, planet1.potential_history)], color='navy', label=f"{planet1.name} Total")
 
     plt.xlabel("Time (days)")
     plt.ylabel("Energy")
-    plt.title(f"Kinetic and Potential Energy of {planet1.name} Over Time")
+    plt.title(f"Kinetic, Potential Energy and Energy Sum of {planet1.name} Over Time")
     plt.grid(True)
     plt.legend()
     plt.show()
