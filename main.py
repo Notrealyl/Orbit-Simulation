@@ -27,7 +27,7 @@ class Planet: # Class to represent a planet
     AU = 149.6e6 * 1000  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     SCALE = 50 / AU  # Define AU which can be changed
-    TIMESTEP = 3600 * 12 # 1 day in seconds
+    TIMESTEP = 3600 * 48 # 1 day in seconds
 
     def __init__(self, x, y, radius, color, mass, name="unknown"): #define initial values
         self.x = x
@@ -275,7 +275,7 @@ def main():
 
                 planet.kinetic = 0.5 * planet.mass * (planet.x_vel**2 + planet.y_vel**2) # Kinetic energy 1/2 mv^2
                 planet.potential = -planet.G * sun.mass * planet.mass / planet.distance_from_sun # Potential energy -GMm/r
-                planet.angular_momentum = planet.mass * math.sqrt(planet.x_vel**2 + planet.y_vel**2) * planet.distance_from_sun  # Angular momentum L = mvr
+                planet.angular_momentum = planet.mass * (planet.x * planet.y_vel - planet.y * planet.x_vel) # Angular momentum L = m * r * v
 
                 planet.orbit = planet.orbit[-(1000):] # Keep only the last 1000 points to optimize performance
 
